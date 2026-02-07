@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>鴨川ヒルズリゾートホテル 収支シミュレーター</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+  --navy: #1a2744;
+  --navy-light: #2a3f6a;
+  --navy-dark: #0e1a30;
+  --white: #ffffff;
+  --gray-50: #f8f9fc;
+  --gray-100: #eef1f6;
+  --gray-200: #dde2ec;
+  --gray-300: #b8c1d4;
+  --gray-500: #6b7a94;
+  --gray-700: #374a6b;
+  --accent: #3b82f6;
+  --accent-light: #60a5fa;
+  --green: #10b981;
+  --green-bg: #ecfdf5;
+  --red: #ef4444;
+  --red-bg: #fef2f2;
+  --orange: #f59e0b;
+  --orange-bg: #fffbeb;
+  --pet-color: #8b5cf6;
+  --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,.1), 0 4px 6px rgba(0,0,0,.05);
+  --radius: 8px;
+  --radius-lg: 12px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: 'Segoe UI','Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif; background:var(--gray-50); color:var(--navy); line-height:1.5; }
+.header { background:linear-gradient(135deg,var(--navy),var(--navy-light)); color:var(--white); padding:16px 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; position:sticky; top:0; z-index:100; box-shadow:var(--shadow-lg); }
+.header h1 { font-size:18px; font-weight:700; letter-spacing:.5px; }
+.header-sub { font-size:12px; opacity:.7; }
+.header-actions { display:flex; gap:8px; flex-wrap:wrap; }
+.btn { padding:8px 16px; border:none; border-radius:var(--radius); cursor:pointer; font-size:13px; font-weight:600; transition:all .2s; display:inline-flex; align-items:center; gap:6px; }
+.btn-primary { background:var(--accent); color:var(--white); }
+.btn-primary:hover { background:var(--accent-light); }
+.btn-outline { background:transparent; color:var(--white); border:1px solid rgba(255,255,255,.4); }
+.btn-outline:hover { background:rgba(255,255,255,.1); }
+.btn-preset { padding:6px 12px; font-size:12px; border-radius:20px; }
+.btn-preset.active { background:var(--white); color:var(--navy); }
+.container { max-width:1400px; margin:0 auto; padding:20px; }
+.kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:24px; }
+.kpi-card { background:var(--white); border-radius:var(--radius-lg); padding:20px; box-shadow:var(--shadow); border-left:4px solid var(--accent); }
+.kpi-card.green { border-left-color:var(--green); }
+.kpi-card.red { border-left-color:var(--red); }
+.kpi-card.orange { border-left-color:var(--orange); }
+.kpi-card.purple { border-left-color:var(--pet-color); }
+.kpi-label { font-size:12px; color:var(--gray-500); font-weight:600; text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px; }
+.kpi-value { font-size:24px; font-weight:700; }
+.kpi-sub { font-size:11px; color:var(--gray-500); margin-top:4px; }
+.section { background:var(--white); border-radius:var(--radius-lg); padding:24px; box-shadow:var(--shadow); margin-bottom:20px; }
+.section-title { font-size:16px; font-weight:700; margin-bottom:16px; padding-bottom:8px; border-bottom:2px solid var(--gray-100); }
+.tabs { display:flex; gap:4px; margin-bottom:20px; flex-wrap:wrap; border-bottom:2px solid var(--gray-100); padding-bottom:0; }
+.tab { padding:10px 20px; cursor:pointer; font-size:13px; font-weight:600; color:var(--gray-500); border:none; background:none; border-bottom:3px solid transparent; transition:all .2s; margin-bottom:-2px; }
+.tab:hover { color:var(--navy); }
+.tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+.tab-content { display:none; }
+.tab-content.active { display:block; }
+.scenario-table { width:100%; border-collapse:collapse; font-size:13px; }
+.scenario-table th, .scenario-table td { padding:10px 14px; text-align:right; border-bottom:1px solid var(--gray-100); }
+.scenario-table th { background:var(--gray-50); font-weight:600; color:var(--gray-700); text-align:left; }
+.scenario-table th:not(:first-child) { text-align:right; }
+.scenario-table td:first-child { text-align:left; font-weight:500; }
+.scenario-table .highlight { background:var(--green-bg); }
+.scenario-table .negative { color:var(--red); }
+.scenario-table .positive { color:var(--green); }
+.chart-container { position:relative; height:350px; margin:12px 0; }
+.chart-half { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+.chart-half .chart-container { height:300px; }
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:200; overflow-y:auto; }
+.modal-overlay.open { display:flex; align-items:flex-start; justify-content:center; padding:20px; }
+.modal { background:var(--white); border-radius:var(--radius-lg); width:100%; max-width:1000px; margin:20px auto; box-shadow:var(--shadow-lg); max-height:90vh; display:flex; flex-direction:column; }
+.modal-header { padding:20px 24px; border-bottom:1px solid var(--gray-200); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+.modal-header h2 { font-size:18px; }
+.modal-close { width:36px; height:36px; border:none; background:var(--gray-100); border-radius:50%; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; }
+.modal-close:hover { background:var(--gray-200); }
+.modal-body { padding:0; overflow-y:auto; flex:1; }
+.modal-footer { padding:16px 24px; border-top:1px solid var(--gray-200); display:flex; justify-content:flex-end; gap:8px; flex-shrink:0; }
+.settings-tabs { display:flex; border-bottom:1px solid var(--gray-200); background:var(--gray-50); flex-wrap:wrap; }
+.settings-tab { padding:12px 20px; font-size:13px; font-weight:600; color:var(--gray-500); cursor:pointer; border:none; background:none; border-bottom:2px solid transparent; }
+.settings-tab:hover { color:var(--navy); }
+.settings-tab.active { color:var(--accent); border-bottom-color:var(--accent); background:var(--white); }
+.settings-panel { display:none; padding:24px; }
+.settings-panel.active { display:block; }
+.form-group { margin-bottom:16px; }
+.form-label { font-size:12px; font-weight:600; color:var(--gray-700); margin-bottom:4px; display:block; }
+.form-input { width:100%; padding:8px 12px; border:1px solid var(--gray-200); border-radius:var(--radius); font-size:13px; transition:border-color .2s; }
+.form-input:focus { outline:none; border-color:var(--accent); }
+.form-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; }
+.form-section { margin-bottom:24px; padding-bottom:16px; border-bottom:1px solid var(--gray-100); }
+.form-section-title { font-size:14px; font-weight:700; margin-bottom:12px; color:var(--navy); }
+.room-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+.room-card { border:1px solid var(--gray-200); border-radius:var(--radius); padding:16px; }
+.room-card h4 { font-size:13px; font-weight:700; margin-bottom:8px; }
+.room-card.pet { border-color:var(--pet-color); border-width:2px; }
+.room-card .form-row { grid-template-columns:1fr 1fr; }
+.bulk-adjust { background:var(--gray-50); border-radius:var(--radius); padding:16px; margin-bottom:20px; }
+.bulk-adjust h4 { font-size:13px; font-weight:700; margin-bottom:10px; }
+.checkbox-grid { display:flex; flex-wrap:wrap; gap:8px; }
+.checkbox-label { display:flex; align-items:center; gap:4px; font-size:13px; padding:4px 10px; border:1px solid var(--gray-200); border-radius:20px; cursor:pointer; }
+.checkbox-label input { accent-color:var(--accent); }
+.checkbox-label:has(input:checked) { background:var(--accent); color:var(--white); border-color:var(--accent); }
+.expense-table { width:100%; font-size:12px; border-collapse:collapse; }
+.expense-table th, .expense-table td { padding:6px 10px; border-bottom:1px solid var(--gray-100); }
+.expense-table th { text-align:left; font-weight:600; background:var(--gray-50); }
+.expense-table td:last-child { text-align:right; }
+.expense-table input { width:100px; text-align:right; }
+.detail-table { width:100%; border-collapse:collapse; font-size:12px; overflow-x:auto; display:block; }
+.detail-table th, .detail-table td { padding:8px 10px; border:1px solid var(--gray-200); white-space:nowrap; }
+.detail-table th { background:var(--gray-50); font-weight:600; text-align:center; position:sticky; top:0; }
+.detail-table td { text-align:right; }
+.detail-table td:first-child { text-align:left; font-weight:500; }
+.revpar-table { width:100%; border-collapse:collapse; font-size:13px; }
+.revpar-table th, .revpar-table td { padding:10px 14px; border-bottom:1px solid var(--gray-100); }
+.revpar-table th { text-align:left; background:var(--gray-50); font-weight:600; }
+.revpar-table td { text-align:right; }
+.revpar-table td:first-child { text-align:left; }
+.negative-val { color:var(--red); }
+.positive-val { color:var(--green); }
+@media(max-width:768px) {
+  .header h1 { font-size:14px; }
+  .kpi-grid { grid-template-columns:repeat(2,1fr); }
+  .kpi-value { font-size:18px; }
+  .chart-half { grid-template-columns:1fr; }
+  .container { padding:12px; }
+  .section { padding:16px; }
+  .modal { max-height:100vh; border-radius:0; margin:0; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>鴨川ヒルズリゾートホテル 収支シミュレーター</h1>
+    <div class="header-sub">ペット同伴リニューアル事業計画 | 全66室（一般43室 + ペット23室）</div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-preset btn-outline" onclick="applyPreset('conservative')">保守</button>
+    <button class="btn btn-preset btn-outline active" onclick="applyPreset('neutral')">中立</button>
+    <button class="btn btn-preset btn-outline" onclick="applyPreset('optimistic')">楽観</button>
+    <button class="btn btn-primary" onclick="openSettings()">設定</button>
+  </div>
+</div>
+
+<div class="container">
+  <!-- KPI Dashboard -->
+  <div class="kpi-grid" id="kpiGrid"></div>
+
+  <!-- 3-Scenario Comparison -->
+  <div class="section">
+    <div class="section-title">3シナリオ比較</div>
+    <div style="overflow-x:auto">
+      <table class="scenario-table" id="scenarioTable"></table>
+    </div>
+  </div>
+
+  <!-- Main Tabs -->
+  <div class="tabs" id="mainTabs">
+    <button class="tab active" data-tab="overview">10年間累積収支</button>
+    <button class="tab" data-tab="monthly">月次収支推移</button>
+    <button class="tab" data-tab="roomBreak">客室タイプ別収益</button>
+    <button class="tab" data-tab="expenseBreak">経費内訳</button>
+    <button class="tab" data-tab="plTable">年次損益計算書</button>
+    <button class="tab" data-tab="revpar">ルームタイプ別RevPAR</button>
+    <button class="tab" data-tab="monthlyDetail">月別稼働率・単価一覧</button>
+  </div>
+
+  <div id="tabContents">
+    <div class="tab-content active" id="tab-overview">
+      <div class="section">
+        <div class="section-title">10年間累積収支グラフ</div>
+        <div class="chart-container"><canvas id="chartCumulative"></canvas></div>
+      </div>
+    </div>
+    <div class="tab-content" id="tab-monthly">
+      <div class="section">
+        <div class="section-title">月次収支推移（1年目）</div>
+        <div class="chart-container"><canvas id="chartMonthly"></canvas></div>
+      </div>
+    </div>
+    <div class="tab-content" id="tab-roomBreak">
+      <div class="section">
+        <div class="section-title">客室タイプ別年間収益内訳</div>
+        <div class="chart-half">
+          <div class="chart-container"><canvas id="chartRoomRevenue"></canvas></div>
+          <div class="chart-container"><canvas id="chartRoomCompare"></canvas></div>
+        </div>
+      </div>
+    </div>
+    <div class="tab-content" id="tab-expenseBreak">
+      <div class="section">
+        <div class="section-title">経費内訳</div>
+        <div class="chart-half">
+          <div class="chart-container"><canvas id="chartExpensePie"></canvas></div>
+          <div class="chart-container"><canvas id="chartExpenseBar"></canvas></div>
+        </div>
+      </div>
+    </div>
+    <div class="tab-content" id="tab-plTable">
+      <div class="section">
+        <div class="section-title">年次別損益計算書</div>
+        <div style="overflow-x:auto"><table class="detail-table" id="plTableBody"></table></div>
+      </div>
+    </div>
+    <div class="tab-content" id="tab-revpar">
+      <div class="section">
+        <div class="section-title">ルームタイプ別RevPAR一覧</div>
+        <table class="revpar-table" id="revparTable"></table>
+      </div>
+    </div>
+    <div class="tab-content" id="tab-monthlyDetail">
+      <div class="section">
+        <div class="section-title">月別稼働率・単価一覧</div>
+        <div style="overflow-x:auto"><table class="detail-table" id="monthlyDetailTable"></table></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>シミュレーション設定</h2>
+      <button class="modal-close" onclick="closeSettings()">&times;</button>
+    </div>
+    <div class="settings-tabs" id="settingsTabs">
+      <button class="settings-tab active" data-stab="rooms">客室設定</button>
+      <button class="settings-tab" data-stab="ancillary">付帯収入</button>
+      <button class="settings-tab" data-stab="expenses">経費設定</button>
+      <button class="settings-tab" data-stab="personnel">人件費</button>
+      <button class="settings-tab" data-stab="simcond">シミュレーション条件</button>
+    </div>
+    <div class="modal-body">
+      <div class="settings-panel active" id="stab-rooms"></div>
+      <div class="settings-panel" id="stab-ancillary"></div>
+      <div class="settings-panel" id="stab-expenses"></div>
+      <div class="settings-panel" id="stab-personnel"></div>
+      <div class="settings-panel" id="stab-simcond"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" style="color:var(--navy);border-color:var(--gray-300)" onclick="closeSettings()">キャンセル</button>
+      <button class="btn btn-primary" onclick="applySettings()">反映</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== DATA MODEL =====
+const DEFAULT = {
+  generalRooms: [
+    { id:'tower_washitsu', name:'タワー館 和室', count:6, normalADR:13000, peakADR:20000, normalOcc:0.55, peakOcc:0.75 },
+    { id:'tower_wamodern', name:'タワー館 和モダン', count:6, normalADR:16000, peakADR:25000, normalOcc:0.60, peakOcc:0.80 },
+    { id:'tower_wayoshitsu', name:'タワー館 和洋室', count:3, normalADR:20000, peakADR:30000, normalOcc:0.60, peakOcc:0.80 },
+    { id:'honkan_deluxe', name:'本館 洋室デラックス', count:6, normalADR:13000, peakADR:21000, normalOcc:0.55, peakOcc:0.75 },
+    { id:'honkan_wayoshitsu', name:'本館 和洋室 6畳+ツイン', count:10, normalADR:12000, peakADR:20000, normalOcc:0.55, peakOcc:0.75 },
+    { id:'washitsu10', name:'和室10畳', count:5, normalADR:11000, peakADR:18000, normalOcc:0.50, peakOcc:0.70 },
+    { id:'suite', name:'スイートルーム', count:1, normalADR:35000, peakADR:50000, normalOcc:0.50, peakOcc:0.75 },
+    { id:'tower_wamodern_refa', name:'タワー館 和モダン refa', count:2, normalADR:20000, peakADR:30000, normalOcc:0.60, peakOcc:0.80 },
+    { id:'tower_wayoshitsu_refa', name:'タワー館 和洋室 refa', count:1, normalADR:22000, peakADR:32000, normalOcc:0.60, peakOcc:0.80 },
+    { id:'honkan_suite', name:'本館 スイートルーム', count:3, normalADR:30000, peakADR:45000, normalOcc:0.55, peakOcc:0.75 }
+  ],
+  petRooms: [
+    { id:'pet_standard', name:'ペットスタンダード', count:14, normalADR:18000, peakADR:27000, petFee:3000, petFee2:2000, normalOcc:0.60, peakOcc:0.80 },
+    { id:'pet_premium', name:'ペットプレミアム', count:6, normalADR:25000, peakADR:38000, petFee:5000, petFee2:3000, normalOcc:0.65, peakOcc:0.85 },
+    { id:'pet_suite', name:'ペットスイート', count:3, normalADR:35000, peakADR:50000, petFee:8000, petFee2:5000, normalOcc:0.60, peakOcc:0.80 }
+  ],
+  ancillary: {
+    restCapacity:120, breakfastPrice:2500, dinnerPrice:6000, petMenuPrice:1500,
+    breakfastUtil:0.80, dinnerUtil:0.70, avgGuests:2.2,
+    dogRunExtFee:1000, dogRunExtVisits:100,
+    groomPrice:5000, groomClients:40,
+    petShopMonthly:100000,
+    bbqPrice:4000, bbqUses:60,
+    banquetPrice:50000, banquetUses:4,
+    shopMonthly:150000,
+    spaPrice:5000, spaClients:30,
+    otherMonthly:60000
+  },
+  expenses: {
+    bm:450000, netTel:250000,
+    elec:1100000, water:400000, gas:150000, pool:150000,
+    legal:100000, system:200000, garbage:60000, ad:500000,
+    otaRate:0.12, agentRate:0.10,
+    entertainment:600000, marketing:80000,
+    foodCostRate:0.30, bevCostRate:0.15,
+    linenUnit:2500, restLinen:200000,
+    amenityUnit:1200, amenityGuests:2.2,
+    petLinen:200000, petClean:250000, dogRunMaint:120000, petFood:150000, petInsurance:80000,
+    generalAdmin:250000, housing:200000, training:250000,
+    equipRoom:300000, equipPetRoom:100000, equipRest:200000, equipCommon:100000, equipPet:50000,
+    insFire:130000, insLiability:100000, insFood:30000, insWorker:30000, insInn:50000, insPet:40000, insOther:20000,
+    maintAC:200000, maintElec:100000, maintPlumb:120000, maintPool:100000, maintDogRun:80000,
+    repairRegular:400000, repairEmergency:200000,
+    disaster:500000, majorRepair:500000, propertyTax:1400000, reserve:1000000
+  },
+  personnel: {
+    departments: [
+      { name:'総支配人', ft:1, pt:0, salary:550000 },
+      { name:'フロント・予約', ft:8, pt:2, salary:300000 },
+      { name:'ハウスキーピング', ft:8, pt:6, salary:260000 },
+      { name:'レストラン', ft:6, pt:4, salary:280000 },
+      { name:'キッチン', ft:7, pt:1, salary:300000 },
+      { name:'施設管理', ft:4, pt:0, salary:290000 },
+      { name:'管理部門', ft:3, pt:0, salary:320000 },
+      { name:'ペットコンシェルジュ', ft:2, pt:0, salary:300000 },
+      { name:'ペット専用清掃員', ft:1, pt:2, salary:250000 }
+    ],
+    ptHourly:1200, ptHours:120,
+    socialRate:0.15, bonusMonths:3.0, allowanceRate:0.057
+  },
+  simCond: {
+    years:10,
+    peakMonths:[3,4,5,7,8,9,12],
+    occGrowth:1.0, adrGrowth:1.5, expGrowth:2.0,
+    totalInvestment:800000000,
+    loanAmount:560000000, loanRate:1.8, loanYears:20
+  }
+};
+
+let S = JSON.parse(JSON.stringify(DEFAULT));
+let charts = {};
+
+// ===== CALCULATION ENGINE =====
+const MONTHS = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+const DAYS = [31,28,31,30,31,30,31,31,30,31,30,31];
+const OCC_PATTERN_GEN = [0.80,0.85,1.05,1.10,1.15,0.85,1.20,1.30,1.05,0.90,0.80,1.00];
+const OCC_PATTERN_PET = [0.85,0.85,1.05,1.15,1.15,0.85,1.15,1.25,1.10,0.90,0.85,1.00];
+
+function isPeak(m) { return S.simCond.peakMonths.includes(m+1); }
+
+function calcMonthlyLoan() {
+  const P = S.simCond.loanAmount;
+  const r = S.simCond.loanRate / 100 / 12;
+  const n = S.simCond.loanYears * 12;
+  if (r === 0) return P / n;
+  return P * r * Math.pow(1+r, n) / (Math.pow(1+r, n) - 1);
+}
+
+function calcRoomRevenue(rooms, isPetRoom, month, yearIdx) {
+  let total = 0;
+  const occGrowth = Math.pow(1 + S.simCond.occGrowth/100, yearIdx);
+  const adrGrowth = Math.pow(1 + S.simCond.adrGrowth/100, yearIdx);
+  const peak = isPeak(month);
+  const pattern = isPetRoom ? OCC_PATTERN_PET[month] : OCC_PATTERN_GEN[month];
+  for (const rm of rooms) {
+    const adr = (peak ? rm.peakADR : rm.normalADR) * adrGrowth;
+    const baseOcc = peak ? rm.peakOcc : rm.normalOcc;
+    const occ = Math.min(baseOcc * pattern * occGrowth, 1.0);
+    total += rm.count * adr * occ * DAYS[month];
+    if (isPetRoom && rm.petFee) {
+      total += rm.count * rm.petFee * occ * DAYS[month] * 0.85;
+    }
+  }
+  return total;
+}
+
+function calcWeightedOcc(rooms, month, yearIdx, pattern) {
+  const occGrowth = Math.pow(1 + S.simCond.occGrowth/100, yearIdx);
+  const peak = isPeak(month);
+  let totalRN = 0, totalOccRN = 0;
+  for (const rm of rooms) {
+    const baseOcc = peak ? rm.peakOcc : rm.normalOcc;
+    const occ = Math.min(baseOcc * pattern[month] * occGrowth, 1.0);
+    totalRN += rm.count * DAYS[month];
+    totalOccRN += rm.count * occ * DAYS[month];
+  }
+  return totalRN > 0 ? totalOccRN / totalRN : 0;
+}
+
+function calcRestaurantRevenue(month, yearIdx) {
+  const a = S.ancillary;
+  const adrGrowth = Math.pow(1 + S.simCond.adrGrowth/100, yearIdx);
+  const genOcc = calcWeightedOcc(S.generalRooms, month, yearIdx, OCC_PATTERN_GEN);
+  const petOcc = calcWeightedOcc(S.petRooms, month, yearIdx, OCC_PATTERN_PET);
+  const genCount = S.generalRooms.reduce((s,r)=>s+r.count,0);
+  const petCount = S.petRooms.reduce((s,r)=>s+r.count,0);
+  const genGuests = genCount * genOcc * a.avgGuests * DAYS[month];
+  const petGuests = petCount * petOcc * 2.0 * DAYS[month];
+  const totalGuests = genGuests + petGuests;
+  const breakfast = totalGuests * a.breakfastUtil * a.breakfastPrice * adrGrowth;
+  const dinner = totalGuests * a.dinnerUtil * a.dinnerPrice * adrGrowth;
+  const petMenu = petGuests * 0.5 * a.petMenuPrice * adrGrowth;
+  return { breakfast, dinner, petMenu, total: breakfast + dinner + petMenu };
+}
+
+function calcAncillaryRevenue(month, yearIdx) {
+  const a = S.ancillary;
+  const adrGrowth = Math.pow(1 + S.simCond.adrGrowth/100, yearIdx);
+  const rest = calcRestaurantRevenue(month, yearIdx);
+  const dogRun = a.dogRunExtFee * a.dogRunExtVisits;
+  const groom = a.groomPrice * a.groomClients;
+  const petShop = a.petShopMonthly;
+  const bbq = isPeak(month) ? a.bbqPrice * a.bbqUses : a.bbqPrice * a.bbqUses * 0.3;
+  const banquet = a.banquetPrice * a.banquetUses;
+  const shop = a.shopMonthly * adrGrowth;
+  const spa = a.spaPrice * a.spaClients;
+  const other = a.otherMonthly;
+  return {
+    restaurant: rest.total,
+    dogRun, groom, petShop, bbq, banquet, shop, spa, other,
+    total: rest.total + dogRun + groom + petShop + bbq + banquet + shop + spa + other
+  };
+}
+
+function calcMonthlyExpenses(month, yearIdx, monthlyRoomRevenue, monthlyRestRevenue) {
+  const e = S.expenses;
+  const expGrowth = Math.pow(1 + S.simCond.expGrowth/100, yearIdx);
+  const genOcc = calcWeightedOcc(S.generalRooms, month, yearIdx, OCC_PATTERN_GEN);
+  const petOcc = calcWeightedOcc(S.petRooms, month, yearIdx, OCC_PATTERN_PET);
+  const genCount = S.generalRooms.reduce((s,r)=>s+r.count,0);
+  const petCount = S.petRooms.reduce((s,r)=>s+r.count,0);
+
+  // Personnel
+  let ftBase = 0;
+  S.personnel.departments.forEach(d => { ftBase += d.ft * d.salary; });
+  const ptTotal = S.personnel.departments.reduce((s,d)=>s+d.pt,0) * S.personnel.ptHourly * S.personnel.ptHours;
+  const socialIns = ftBase * S.personnel.socialRate;
+  const bonus = ftBase * S.personnel.bonusMonths / 12;
+  const allowance = ftBase * S.personnel.allowanceRate;
+  const personnel = (ftBase + ptTotal + socialIns + bonus + allowance) * expGrowth;
+
+  // Variable costs
+  const otaCommission = monthlyRoomRevenue * e.otaRate * 0.5;
+  const agentCommission = monthlyRoomRevenue * e.agentRate * 0.2;
+  const commission = otaCommission + agentCommission;
+
+  const foodCost = monthlyRestRevenue * e.foodCostRate;
+  const bevCost = monthlyRestRevenue * e.bevCostRate;
+  const restCosts = (foodCost + bevCost + 200000 + 200000) * expGrowth;
+
+  const genLinenRN = genCount * genOcc * DAYS[month];
+  const petLinenRN = petCount * petOcc * DAYS[month];
+  const linen = (genLinenRN * e.linenUnit + petLinenRN * e.linenUnit + e.restLinen) * expGrowth;
+
+  const genAmenity = genCount * genOcc * DAYS[month] * e.amenityGuests * e.amenityUnit * 0.5;
+  const petAmenity = petCount * petOcc * DAYS[month] * 2.0 * e.amenityUnit * 0.5 + petCount * petOcc * DAYS[month] * 500;
+  const amenity = (genAmenity + petAmenity) * expGrowth;
+
+  // Fixed & semi-variable
+  const fixed = (
+    e.bm + e.netTel + e.elec + e.water + e.gas + e.pool +
+    e.legal + e.system + e.garbage + e.ad +
+    e.entertainment + e.marketing +
+    e.petLinen + e.petClean + e.dogRunMaint + e.petFood + e.petInsurance +
+    e.generalAdmin + e.housing + e.training +
+    e.equipRoom + e.equipPetRoom + e.equipRest + e.equipCommon + e.equipPet +
+    e.insFire + e.insLiability + e.insFood + e.insWorker + e.insInn + e.insPet + e.insOther +
+    e.maintAC + e.maintElec + e.maintPlumb + e.maintPool + e.maintDogRun +
+    e.repairRegular + e.repairEmergency +
+    e.disaster + e.majorRepair + e.propertyTax + e.reserve
+  ) * expGrowth;
+
+  const total = personnel + commission + restCosts + linen + amenity + fixed;
+  return {
+    personnel, commission, restCosts, linen, amenity, fixed, total,
+    categories: {
+      '人件費': personnel,
+      '集客手数料': commission,
+      'レストラン仕入': restCosts,
+      'リネン費': linen,
+      'アメニティ費': amenity,
+      '水光熱費': (e.elec + e.water + e.gas + e.pool) * expGrowth,
+      '固定資産税': e.propertyTax * expGrowth,
+      '設備メンテ・修繕': (e.maintAC+e.maintElec+e.maintPlumb+e.maintPool+e.maintDogRun+e.repairRegular+e.repairEmergency) * expGrowth,
+      '広告・マーケティング': (e.ad + e.marketing) * expGrowth,
+      '保険': (e.insFire+e.insLiability+e.insFood+e.insWorker+e.insInn+e.insPet+e.insOther) * expGrowth,
+      'ペット関連': (e.petLinen+e.petClean+e.dogRunMaint+e.petFood+e.petInsurance) * expGrowth,
+      'その他': (e.bm+e.netTel+e.legal+e.system+e.garbage+e.entertainment+e.generalAdmin+e.housing+e.training+e.equipRoom+e.equipPetRoom+e.equipRest+e.equipCommon+e.equipPet+e.disaster+e.majorRepair+e.reserve) * expGrowth
+    }
+  };
+}
+
+function runSimulation() {
+  const years = S.simCond.years;
+  const loan = calcMonthlyLoan();
+  const results = { yearly:[], monthly:[] };
+
+  for (let y = 0; y < years; y++) {
+    let yearData = { genRevenue:0, petRevenue:0, ancRevenue:0, restRevenue:0, expenses:0, loanPayment:loan*12, months:[] };
+    let yearExpCats = {};
+
+    for (let m = 0; m < 12; m++) {
+      const genRev = calcRoomRevenue(S.generalRooms, false, m, y);
+      const petRev = calcRoomRevenue(S.petRooms, true, m, y);
+      const roomRev = genRev + petRev;
+      const anc = calcAncillaryRevenue(m, y);
+      const exp = calcMonthlyExpenses(m, y, roomRev, anc.restaurant);
+      const totalRev = roomRev + anc.total;
+      const net = totalRev - exp.total - loan;
+
+      const mData = { month:m, genRevenue:genRev, petRevenue:petRev, roomRevenue:roomRev, ancRevenue:anc.total, restRevenue:anc.restaurant, totalRevenue:totalRev, expenses:exp.total, loanPayment:loan, net, expCats:exp.categories };
+      yearData.months.push(mData);
+      yearData.genRevenue += genRev;
+      yearData.petRevenue += petRev;
+      yearData.ancRevenue += anc.total;
+      yearData.restRevenue += anc.restaurant;
+      yearData.expenses += exp.total;
+
+      for (const [k,v] of Object.entries(exp.categories)) {
+        yearExpCats[k] = (yearExpCats[k]||0) + v;
+      }
+    }
+    yearData.totalRevenue = yearData.genRevenue + yearData.petRevenue + yearData.ancRevenue;
+    yearData.net = yearData.totalRevenue - yearData.expenses - yearData.loanPayment;
+    yearData.expCats = yearExpCats;
+    results.yearly.push(yearData);
+  }
+  return results;
+}
+
+function runScenario(preset) {
+  const saved = JSON.parse(JSON.stringify(S));
+  applyPresetToS(preset);
+  const r = runSimulation();
+  Object.assign(S, saved);
+  return r;
+}
+
+function applyPresetToS(preset) {
+  const mult = { optimistic:{ occ:1.167, adr:1.10 }, neutral:{ occ:1.0, adr:1.0 }, conservative:{ occ:0.833, adr:0.90 } };
+  const m = mult[preset];
+  S.generalRooms.forEach(r => {
+    const def = DEFAULT.generalRooms.find(d=>d.id===r.id);
+    r.normalOcc = Math.min(def.normalOcc * m.occ, 0.98);
+    r.peakOcc = Math.min(def.peakOcc * m.occ, 0.98);
+    r.normalADR = Math.round(def.normalADR * m.adr);
+    r.peakADR = Math.round(def.peakADR * m.adr);
+  });
+  S.petRooms.forEach(r => {
+    const def = DEFAULT.petRooms.find(d=>d.id===r.id);
+    r.normalOcc = Math.min(def.normalOcc * m.occ, 0.98);
+    r.peakOcc = Math.min(def.peakOcc * m.occ, 0.98);
+    r.normalADR = Math.round(def.normalADR * m.adr);
+    r.peakADR = Math.round(def.peakADR * m.adr);
+  });
+}
+
+// ===== FORMATTING =====
+function fmt(n) { return Math.round(n).toLocaleString('ja-JP'); }
+function fmtM(n) { return (n/10000).toFixed(0) + '万'; }
+function fmtOku(n) { return (n/100000000).toFixed(2) + '億'; }
+function pct(n) { return (n*100).toFixed(1) + '%'; }
+
+// ===== RENDER KPI =====
+function renderKPI(sim) {
+  const y0 = sim.yearly[0];
+  const genCount = S.generalRooms.reduce((s,r)=>s+r.count,0);
+  const petCount = S.petRooms.reduce((s,r)=>s+r.count,0);
+  const totalCount = genCount + petCount;
+  const genRevPAR = Math.round(y0.genRevenue / (genCount * 365));
+  const petRevPAR = Math.round(y0.petRevenue / (petCount * 365));
+  const totalRevPAR = Math.round((y0.genRevenue + y0.petRevenue) / (totalCount * 365));
+  const inv = S.simCond.totalInvestment;
+  const netYield = ((y0.net / inv) * 100).toFixed(1);
+  const payback = y0.net > 0 ? (inv / y0.net).toFixed(1) : '--';
+
+  const kpis = [
+    { label:'年間グロス収入', value:'&yen;' + fmt(y0.totalRevenue), sub:'客室+付帯収入', cls:'' },
+    { label:'年間経費', value:'&yen;' + fmt(y0.expenses + y0.loanPayment), sub:'運営費+借入返済', cls:'orange' },
+    { label:'年間Net利益', value:'&yen;' + fmt(y0.net), sub: y0.net >= 0 ? '黒字' : '赤字', cls: y0.net >= 0 ? 'green' : 'red' },
+    { label:'Net利回り', value: netYield + '%', sub:'対投資額 ' + fmtOku(inv), cls: parseFloat(netYield) >= 0 ? 'green' : 'red' },
+    { label:'一般客室 RevPAR', value:'&yen;' + fmt(genRevPAR), sub: genCount + '室', cls:'' },
+    { label:'ペット客室 RevPAR', value:'&yen;' + fmt(petRevPAR), sub: petCount + '室', cls:'purple' },
+    { label:'全体 RevPAR', value:'&yen;' + fmt(totalRevPAR), sub: totalCount + '室', cls:'' },
+    { label:'投資回収期間', value: payback + '年', sub:'総投資額 ' + fmtOku(inv), cls: parseFloat(payback) <= 15 ? 'green' : 'orange' }
+  ];
+
+  document.getElementById('kpiGrid').innerHTML = kpis.map(k =>
+    `<div class="kpi-card ${k.cls}"><div class="kpi-label">${k.label}</div><div class="kpi-value">${k.value}</div><div class="kpi-sub">${k.sub}</div></div>`
+  ).join('');
+}
+
+// ===== RENDER SCENARIO TABLE =====
+function renderScenarioTable() {
+  const scenarios = ['optimistic','neutral','conservative'];
+  const labels = ['楽観','中立','保守'];
+  const sims = scenarios.map(preset => {
+    const saved = JSON.parse(JSON.stringify(S));
+    applyPresetToS(preset);
+    const result = runSimulation();
+    let gTot=0,gOcc=0,pTot=0,pOcc=0;
+    for(let m=0;m<12;m++){
+      const gc=S.generalRooms.reduce((a,r)=>a+r.count,0);
+      const pc=S.petRooms.reduce((a,r)=>a+r.count,0);
+      const go=calcWeightedOcc(S.generalRooms,m,0,OCC_PATTERN_GEN);
+      const po=calcWeightedOcc(S.petRooms,m,0,OCC_PATTERN_PET);
+      gTot+=gc*DAYS[m]; gOcc+=gc*go*DAYS[m];
+      pTot+=pc*DAYS[m]; pOcc+=pc*po*DAYS[m];
+    }
+    result.annualGenOcc = gTot>0 ? gOcc/gTot : 0;
+    result.annualPetOcc = pTot>0 ? pOcc/pTot : 0;
+    Object.assign(S, saved);
+    return result;
+  });
+
+  const rows = [
+    { label:'一般客室稼働率', fn: (s,i) => pct(s.annualGenOcc) },
+    { label:'ペット客室稼働率', fn: (s,i) => pct(s.annualPetOcc) },
+    { label:'年間売上', fn: s => '&yen;' + fmt(s.yearly[0].totalRevenue) },
+    { label:'  うち客室収入', fn: s => '&yen;' + fmt(s.yearly[0].genRevenue + s.yearly[0].petRevenue) },
+    { label:'  うち付帯収入', fn: s => '&yen;' + fmt(s.yearly[0].ancRevenue) },
+    { label:'年間経費（返済込）', fn: s => '&yen;' + fmt(s.yearly[0].expenses + s.yearly[0].loanPayment) },
+    { label:'年間Net利益', fn: s => { const n=s.yearly[0].net; return `<span class="${n>=0?'positive':'negative'}">&yen;${fmt(n)}</span>`; } },
+    { label:'Net利回り', fn: s => { const r=(s.yearly[0].net/S.simCond.totalInvestment*100); return `<span class="${r>=0?'positive':'negative'}">${r.toFixed(1)}%</span>`; } },
+    { label:'投資回収期間', fn: s => { const n=s.yearly[0].net; return n>0?(S.simCond.totalInvestment/n).toFixed(1)+'年':'--'; } },
+    { label:'10年累積利益', fn: s => { const t=s.yearly.reduce((a,y)=>a+y.net,0); return `<span class="${t>=0?'positive':'negative'}">&yen;${fmt(t)}</span>`; } }
+  ];
+
+  let html = '<thead><tr><th></th>';
+  labels.forEach(l => html += `<th>${l}</th>`);
+  html += '</tr></thead><tbody>';
+  rows.forEach(row => {
+    html += `<tr><td>${row.label}</td>`;
+    sims.forEach((s,i) => html += `<td>${row.fn(s,i)}</td>`);
+    html += '</tr>';
+  });
+  html += '</tbody>';
+  document.getElementById('scenarioTable').innerHTML = html;
+}
+
+// ===== CHARTS =====
+function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
+
+function renderCharts(sim) {
+  // Cumulative
+  destroyChart('cumulative');
+  const cumData = [];
+  let cumRev = 0, cumExp = 0, cumNet = 0;
+  sim.yearly.forEach((y,i) => {
+    cumRev += y.totalRevenue;
+    cumExp += y.expenses + y.loanPayment;
+    cumNet += y.net;
+    cumData.push({ year: (i+1)+'年目', rev:cumRev, exp:cumExp, net:cumNet });
+  });
+  charts.cumulative = new Chart(document.getElementById('chartCumulative'), {
+    type:'line',
+    data: {
+      labels: cumData.map(d=>d.year),
+      datasets: [
+        { label:'累積収入', data:cumData.map(d=>d.rev), borderColor:'#3b82f6', backgroundColor:'rgba(59,130,246,.1)', fill:true, tension:.3 },
+        { label:'累積経費', data:cumData.map(d=>d.exp), borderColor:'#f59e0b', backgroundColor:'rgba(245,158,11,.1)', fill:true, tension:.3 },
+        { label:'累積利益', data:cumData.map(d=>d.net), borderColor: cumData[cumData.length-1].net >= 0 ? '#10b981' : '#ef4444', borderWidth:3, tension:.3, fill:false }
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'top' }, tooltip:{ callbacks:{ label: ctx => ctx.dataset.label + ': ' + fmtOku(ctx.parsed.y) } } }, scales:{ y:{ ticks:{ callback: v => fmtOku(v) } } } }
+  });
+
+  // Monthly
+  destroyChart('monthly');
+  const y0 = sim.yearly[0];
+  charts.monthly = new Chart(document.getElementById('chartMonthly'), {
+    type:'bar',
+    data: {
+      labels: MONTHS,
+      datasets: [
+        { label:'収入', data:y0.months.map(m=>m.totalRevenue), backgroundColor:'rgba(59,130,246,.7)' },
+        { label:'経費', data:y0.months.map(m=>m.expenses), backgroundColor:'rgba(245,158,11,.7)' },
+        { label:'Net', data:y0.months.map(m=>m.net), type:'line', borderColor:'#10b981', borderWidth:2, pointRadius:4, fill:false, yAxisID:'y' }
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ tooltip:{ callbacks:{ label: ctx => ctx.dataset.label + ': ' + fmtM(ctx.parsed.y) } } }, scales:{ y:{ ticks:{ callback: v => fmtM(v) } } } }
+  });
+
+  // Room Revenue Breakdown
+  destroyChart('roomRevenue');
+  const roomLabels = [...S.generalRooms.map(r=>r.name), ...S.petRooms.map(r=>r.name)];
+  const roomRevData = [];
+  S.generalRooms.forEach(r => {
+    let rev = 0;
+    for(let m=0;m<12;m++) rev += calcRoomRevenue([r], false, m, 0);
+    roomRevData.push(rev);
+  });
+  S.petRooms.forEach(r => {
+    let rev = 0;
+    for(let m=0;m<12;m++) rev += calcRoomRevenue([r], true, m, 0);
+    roomRevData.push(rev);
+  });
+  const roomColors = S.generalRooms.map((_,i) => `hsl(${210+i*12},60%,${50+i*3}%)`).concat(S.petRooms.map((_,i) => `hsl(${270+i*20},60%,${50+i*5}%)`));
+  charts.roomRevenue = new Chart(document.getElementById('chartRoomRevenue'), {
+    type:'doughnut',
+    data: { labels:roomLabels, datasets:[{ data:roomRevData, backgroundColor:roomColors }] },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'right', labels:{ font:{size:10} } }, tooltip:{ callbacks:{ label: ctx => ctx.label + ': ' + fmtM(ctx.parsed) } } } }
+  });
+
+  // General vs Pet comparison
+  destroyChart('roomCompare');
+  charts.roomCompare = new Chart(document.getElementById('chartRoomCompare'), {
+    type:'bar',
+    data: {
+      labels:['客室収入','付帯収入','合計'],
+      datasets: [
+        { label:'一般客室', data:[y0.genRevenue, y0.ancRevenue*0.6, y0.genRevenue+y0.ancRevenue*0.6], backgroundColor:'rgba(59,130,246,.7)' },
+        { label:'ペット客室', data:[y0.petRevenue, y0.ancRevenue*0.4, y0.petRevenue+y0.ancRevenue*0.4], backgroundColor:'rgba(139,92,246,.7)' }
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false, scales:{ y:{ ticks:{ callback: v => fmtM(v) } } } }
+  });
+
+  // Expense Pie
+  destroyChart('expensePie');
+  const expCats = y0.months.reduce((acc, m) => {
+    for (const [k,v] of Object.entries(m.expCats)) acc[k] = (acc[k]||0) + v;
+    return acc;
+  }, {});
+  const expLabels = Object.keys(expCats);
+  const expValues = Object.values(expCats);
+  const expColors = ['#1a2744','#2a3f6a','#3b82f6','#60a5fa','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#6366f1','#14b8a6','#f97316'];
+  charts.expensePie = new Chart(document.getElementById('chartExpensePie'), {
+    type:'pie',
+    data: { labels:expLabels, datasets:[{ data:expValues, backgroundColor:expColors }] },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'right', labels:{ font:{size:10} } }, tooltip:{ callbacks:{ label: ctx => ctx.label + ': ' + fmtM(ctx.parsed) + ' (' + (ctx.parsed/expValues.reduce((a,b)=>a+b,0)*100).toFixed(1) + '%)' } } } }
+  });
+
+  // Expense Bar
+  destroyChart('expenseBar');
+  charts.expenseBar = new Chart(document.getElementById('chartExpenseBar'), {
+    type:'bar',
+    data: {
+      labels:expLabels,
+      datasets:[{ data:expValues, backgroundColor:expColors }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, indexAxis:'y', plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label: ctx => fmtM(ctx.parsed.x) } } }, scales:{ x:{ ticks:{ callback: v => fmtM(v) } } } }
+  });
+}
+
+// ===== RENDER TABLES =====
+function renderPLTable(sim) {
+  let html = '<thead><tr><th>項目</th>';
+  sim.yearly.forEach((_,i) => html += `<th>${i+1}年目</th>`);
+  html += '</tr></thead><tbody>';
+
+  const rows = [
+    { label:'客室収入（一般）', fn: y => y.genRevenue },
+    { label:'客室収入（ペット）', fn: y => y.petRevenue },
+    { label:'付帯収入', fn: y => y.ancRevenue },
+    { label:'売上合計', fn: y => y.totalRevenue, bold:true },
+    { label:'運営経費', fn: y => -y.expenses },
+    { label:'借入返済', fn: y => -y.loanPayment },
+    { label:'経費合計', fn: y => -(y.expenses+y.loanPayment), bold:true },
+    { label:'Net利益', fn: y => y.net, bold:true, color:true }
+  ];
+
+  rows.forEach(row => {
+    html += `<tr><td style="${row.bold?'font-weight:700':''}">${row.label}</td>`;
+    sim.yearly.forEach(y => {
+      const v = row.fn(y);
+      const cls = row.color ? (v >= 0 ? 'positive-val' : 'negative-val') : '';
+      html += `<td class="${cls}" style="${row.bold?'font-weight:700':''}">&yen;${fmt(v)}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody>';
+  document.getElementById('plTableBody').innerHTML = html;
+}
+
+function renderRevPARTable() {
+  const allRooms = [...S.generalRooms.map(r=>({...r, type:'一般'})), ...S.petRooms.map(r=>({...r, type:'ペット'}))];
+  let html = '<thead><tr><th>客室タイプ</th><th>区分</th><th>室数</th><th>通常期ADR</th><th>繁忙期ADR</th><th>加重平均ADR</th><th>平均稼働率</th><th>RevPAR</th></tr></thead><tbody>';
+
+  allRooms.forEach(r => {
+    let totalRev = 0;
+    const isPet = r.type === 'ペット';
+    for (let m=0;m<12;m++) totalRev += calcRoomRevenue([r], isPet, m, 0);
+    const avgADR = totalRev / (r.count * 365);
+    const avgOcc = totalRev / (r.count * 365) / ((r.normalADR + r.peakADR)/2);
+    const revpar = totalRev / (r.count * 365);
+    html += `<tr><td>${r.name}</td><td>${r.type}</td><td>${r.count}</td><td>&yen;${fmt(r.normalADR)}</td><td>&yen;${fmt(r.peakADR)}</td><td>&yen;${fmt(avgADR)}</td><td>${pct(Math.min(avgOcc,1))}</td><td>&yen;${fmt(revpar)}</td></tr>`;
+  });
+  html += '</tbody>';
+  document.getElementById('revparTable').innerHTML = html;
+}
+
+function renderMonthlyDetail() {
+  let html = '<thead><tr><th>月</th><th>区分</th><th>一般稼働率</th><th>ペット稼働率</th><th>客室収入</th><th>付帯収入</th><th>経費</th><th>Net</th></tr></thead><tbody>';
+  const sim = runSimulation();
+  sim.yearly[0].months.forEach((m,i) => {
+    const genOcc = calcWeightedOcc(S.generalRooms, i, 0, OCC_PATTERN_GEN);
+    const petOcc = calcWeightedOcc(S.petRooms, i, 0, OCC_PATTERN_PET);
+    const peak = isPeak(i) ? '繁忙期' : '通常期';
+    html += `<tr><td>${MONTHS[i]}</td><td>${peak}</td><td>${pct(genOcc)}</td><td>${pct(petOcc)}</td><td>&yen;${fmt(m.roomRevenue)}</td><td>&yen;${fmt(m.ancRevenue)}</td><td>&yen;${fmt(m.expenses)}</td><td class="${m.net>=0?'positive-val':'negative-val'}">&yen;${fmt(m.net)}</td></tr>`;
+  });
+  html += '</tbody>';
+  document.getElementById('monthlyDetailTable').innerHTML = html;
+}
+
+// ===== SETTINGS MODAL =====
+function openSettings() { document.getElementById('settingsModal').classList.add('open'); renderSettingsPanels(); }
+function closeSettings() { document.getElementById('settingsModal').classList.remove('open'); }
+
+function renderSettingsPanels() {
+  // Room Settings
+  let rhtml = '<div class="bulk-adjust"><h4>一括調整</h4><div class="form-row">';
+  rhtml += '<div class="form-group"><label class="form-label">全室稼働率調整(%)</label><input class="form-input" type="number" id="bulkOccAll" value="100" min="50" max="150"></div>';
+  rhtml += '<div class="form-group"><label class="form-label">通常期料金調整(%)</label><input class="form-input" type="number" id="bulkADRNormal" value="100" min="50" max="150"></div>';
+  rhtml += '<div class="form-group"><label class="form-label">繁忙期料金調整(%)</label><input class="form-input" type="number" id="bulkADRPeak" value="100" min="50" max="150"></div>';
+  rhtml += '</div></div>';
+  rhtml += '<div class="form-section"><div class="form-section-title">既存一般客室（43室）</div><div class="room-grid">';
+  S.generalRooms.forEach((r,i) => {
+    rhtml += `<div class="room-card"><h4>${r.name}（${r.count}室）</h4><div class="form-row">
+      <div class="form-group"><label class="form-label">通常期ADR</label><input class="form-input" type="number" data-gr="${i}" data-field="normalADR" value="${r.normalADR}"></div>
+      <div class="form-group"><label class="form-label">繁忙期ADR</label><input class="form-input" type="number" data-gr="${i}" data-field="peakADR" value="${r.peakADR}"></div>
+      <div class="form-group"><label class="form-label">通常期稼働率</label><input class="form-input" type="number" step="0.01" data-gr="${i}" data-field="normalOcc" value="${r.normalOcc}"></div>
+      <div class="form-group"><label class="form-label">繁忙期稼働率</label><input class="form-input" type="number" step="0.01" data-gr="${i}" data-field="peakOcc" value="${r.peakOcc}"></div>
+    </div></div>`;
+  });
+  rhtml += '</div></div>';
+  rhtml += '<div class="form-section"><div class="form-section-title">ペット同伴専用客室（23室）</div><div class="room-grid">';
+  S.petRooms.forEach((r,i) => {
+    rhtml += `<div class="room-card pet"><h4>${r.name}（${r.count}室）</h4><div class="form-row">
+      <div class="form-group"><label class="form-label">室数</label><input class="form-input" type="number" data-pr="${i}" data-field="count" value="${r.count}"></div>
+      <div class="form-group"><label class="form-label">ペット料金</label><input class="form-input" type="number" data-pr="${i}" data-field="petFee" value="${r.petFee}"></div>
+      <div class="form-group"><label class="form-label">通常期ADR</label><input class="form-input" type="number" data-pr="${i}" data-field="normalADR" value="${r.normalADR}"></div>
+      <div class="form-group"><label class="form-label">繁忙期ADR</label><input class="form-input" type="number" data-pr="${i}" data-field="peakADR" value="${r.peakADR}"></div>
+      <div class="form-group"><label class="form-label">通常期稼働率</label><input class="form-input" type="number" step="0.01" data-pr="${i}" data-field="normalOcc" value="${r.normalOcc}"></div>
+      <div class="form-group"><label class="form-label">繁忙期稼働率</label><input class="form-input" type="number" step="0.01" data-pr="${i}" data-field="peakOcc" value="${r.peakOcc}"></div>
+    </div></div>`;
+  });
+  rhtml += '</div></div>';
+  document.getElementById('stab-rooms').innerHTML = rhtml;
+
+  // Ancillary
+  const a = S.ancillary;
+  let ahtml = '<div class="form-section"><div class="form-section-title">レストラン</div><div class="form-row">';
+  ahtml += `<div class="form-group"><label class="form-label">収容人数</label><input class="form-input" type="number" data-anc="restCapacity" value="${a.restCapacity}"></div>`;
+  ahtml += `<div class="form-group"><label class="form-label">朝食単価</label><input class="form-input" type="number" data-anc="breakfastPrice" value="${a.breakfastPrice}"></div>`;
+  ahtml += `<div class="form-group"><label class="form-label">夕食単価</label><input class="form-input" type="number" data-anc="dinnerPrice" value="${a.dinnerPrice}"></div>`;
+  ahtml += `<div class="form-group"><label class="form-label">ペットメニュー単価</label><input class="form-input" type="number" data-anc="petMenuPrice" value="${a.petMenuPrice}"></div>`;
+  ahtml += `<div class="form-group"><label class="form-label">朝食利用率</label><input class="form-input" type="number" step="0.01" data-anc="breakfastUtil" value="${a.breakfastUtil}"></div>`;
+  ahtml += `<div class="form-group"><label class="form-label">夕食利用率</label><input class="form-input" type="number" step="0.01" data-anc="dinnerUtil" value="${a.dinnerUtil}"></div>`;
+  ahtml += '</div></div>';
+  ahtml += '<div class="form-section"><div class="form-section-title">ドッグラン</div><div class="form-row">';
+  ahtml += `<div class="form-group"><label class="form-label">外部利用料</label><input class="form-input" type="number" data-anc="dogRunExtFee" value="${a.dogRunExtFee}"></div>`;
+  ahtml += `<div class="form-group"><label class="form-label">月間外部利用数</label><input class="form-input" type="number" data-anc="dogRunExtVisits" value="${a.dogRunExtVisits}"></div>`;
+  ahtml += '</div></div>';
+  ahtml += '<div class="form-section"><div class="form-section-title">グルーミング</div><div class="form-row">';
+  ahtml += `<div class="form-group"><label class="form-label">単価</label><input class="form-input" type="number" data-anc="groomPrice" value="${a.groomPrice}"></div>`;
+  ahtml += `<div class="form-group"><label class="form-label">月間件数</label><input class="form-input" type="number" data-anc="groomClients" value="${a.groomClients}"></div>`;
+  ahtml += '</div></div>';
+  ahtml += '<div class="form-section"><div class="form-section-title">その他付帯</div><div class="form-row">';
+  ahtml += `<div class="form-group"><label class="form-label">ペット用品販売(月額)</label><input class="form-input" type="number" data-anc="petShopMonthly" value="${a.petShopMonthly}"></div>`;
+  ahtml += `<div class="form-group"><label class="form-label">BBQ単価</label><input class="form-input" type="number" data-anc="bbqPrice" value="${a.bbqPrice}"></div>`;
+  ahtml += `<div class="form-group"><label class="form-label">BBQ月間利用</label><input class="form-input" type="number" data-anc="bbqUses" value="${a.bbqUses}"></div>`;
+  ahtml += `<div class="form-group"><label class="form-label">宴会場単価</label><input class="form-input" type="number" data-anc="banquetPrice" value="${a.banquetPrice}"></div>`;
+  ahtml += `<div class="form-group"><label class="form-label">宴会場月間利用</label><input class="form-input" type="number" data-anc="banquetUses" value="${a.banquetUses}"></div>`;
+  ahtml += `<div class="form-group"><label class="form-label">売店収入(月額)</label><input class="form-input" type="number" data-anc="shopMonthly" value="${a.shopMonthly}"></div>`;
+  ahtml += `<div class="form-group"><label class="form-label">スパ単価</label><input class="form-input" type="number" data-anc="spaPrice" value="${a.spaPrice}"></div>`;
+  ahtml += `<div class="form-group"><label class="form-label">スパ月間件数</label><input class="form-input" type="number" data-anc="spaClients" value="${a.spaClients}"></div>`;
+  ahtml += `<div class="form-group"><label class="form-label">その他(月額)</label><input class="form-input" type="number" data-anc="otherMonthly" value="${a.otherMonthly}"></div>`;
+  ahtml += '</div></div>';
+  document.getElementById('stab-ancillary').innerHTML = ahtml;
+
+  // Expenses
+  const ex = S.expenses;
+  const expItems = [
+    ['BM費用','bm'],['ネット/電話','netTel'],['電気代','elec'],['水道代','water'],['ガス代','gas'],['プール関連','pool'],
+    ['弁護士/税理士','legal'],['システム利用料','system'],['ゴミ回収費','garbage'],['広告宣伝費','ad'],
+    ['OTA手数料率','otaRate'],['代理店手数料率','agentRate'],
+    ['エンターテインメント','entertainment'],['マーケティング調査','marketing'],
+    ['食材費率','foodCostRate'],['飲料費率','bevCostRate'],
+    ['リネン1室単価','linenUnit'],['レストランリネン','restLinen'],
+    ['アメニティ1人単価','amenityUnit'],
+    ['ペット用リネン','petLinen'],['消臭清掃','petClean'],['ドッグラン維持','dogRunMaint'],['ペットフード','petFood'],['ペット保険','petInsurance'],
+    ['一般管理費','generalAdmin'],['住宅手当等','housing'],['トレーニング','training'],
+    ['備品(客室)','equipRoom'],['備品(ペット室)','equipPetRoom'],['備品(レストラン)','equipRest'],['備品(共用部)','equipCommon'],['備品(ペット)','equipPet'],
+    ['火災保険','insFire'],['施設賠償','insLiability'],['食中毒保険','insFood'],['使用者賠償','insWorker'],['旅館賠償','insInn'],['ペット保険','insPet'],['その他保険','insOther'],
+    ['空調メンテ','maintAC'],['電気メンテ','maintElec'],['給排水メンテ','maintPlumb'],['プールメンテ','maintPool'],['ドッグランメンテ','maintDogRun'],
+    ['定期修繕','repairRegular'],['緊急修繕','repairEmergency'],
+    ['災害対策','disaster'],['大規模修繕積立','majorRepair'],['固定資産税','propertyTax'],['予備費','reserve']
+  ];
+  let ehtml = '<table class="expense-table"><thead><tr><th>経費項目</th><th>月額(円) / 率</th></tr></thead><tbody>';
+  expItems.forEach(([label,key]) => {
+    const isRate = key.includes('Rate');
+    const step = isRate ? '0.01' : '1000';
+    ehtml += `<tr><td>${label}</td><td><input class="form-input" type="number" step="${step}" data-exp="${key}" value="${ex[key]}"></td></tr>`;
+  });
+  ehtml += '</tbody></table>';
+  document.getElementById('stab-expenses').innerHTML = ehtml;
+
+  // Personnel
+  let phtml = '<div class="form-section"><div class="form-section-title">部門別人員配置</div>';
+  phtml += '<table class="expense-table"><thead><tr><th>部門</th><th>正社員</th><th>パート</th><th>正社員月給</th></tr></thead><tbody>';
+  S.personnel.departments.forEach((d,i) => {
+    phtml += `<tr><td>${d.name}</td><td><input class="form-input" type="number" data-dept="${i}" data-df="ft" value="${d.ft}" style="width:60px"></td><td><input class="form-input" type="number" data-dept="${i}" data-df="pt" value="${d.pt}" style="width:60px"></td><td><input class="form-input" type="number" data-dept="${i}" data-df="salary" value="${d.salary}" style="width:100px"></td></tr>`;
+  });
+  phtml += '</tbody></table></div>';
+  phtml += '<div class="form-section"><div class="form-section-title">共通設定</div><div class="form-row">';
+  phtml += `<div class="form-group"><label class="form-label">パート時給</label><input class="form-input" type="number" data-pers="ptHourly" value="${S.personnel.ptHourly}"></div>`;
+  phtml += `<div class="form-group"><label class="form-label">パート月間時間</label><input class="form-input" type="number" data-pers="ptHours" value="${S.personnel.ptHours}"></div>`;
+  phtml += `<div class="form-group"><label class="form-label">社会保険料率</label><input class="form-input" type="number" step="0.01" data-pers="socialRate" value="${S.personnel.socialRate}"></div>`;
+  phtml += `<div class="form-group"><label class="form-label">賞与月数</label><input class="form-input" type="number" step="0.1" data-pers="bonusMonths" value="${S.personnel.bonusMonths}"></div>`;
+  phtml += `<div class="form-group"><label class="form-label">手当率</label><input class="form-input" type="number" step="0.001" data-pers="allowanceRate" value="${S.personnel.allowanceRate}"></div>`;
+  phtml += '</div></div>';
+  document.getElementById('stab-personnel').innerHTML = phtml;
+
+  // Simulation Conditions
+  let shtml = '<div class="form-row">';
+  shtml += `<div class="form-group"><label class="form-label">シミュレーション期間（年）</label><input class="form-input" type="number" data-sim="years" value="${S.simCond.years}" min="1" max="20"></div>`;
+  shtml += `<div class="form-group"><label class="form-label">総投資額</label><input class="form-input" type="number" data-sim="totalInvestment" value="${S.simCond.totalInvestment}"></div>`;
+  shtml += `<div class="form-group"><label class="form-label">借入金額</label><input class="form-input" type="number" data-sim="loanAmount" value="${S.simCond.loanAmount}"></div>`;
+  shtml += `<div class="form-group"><label class="form-label">金利(%)</label><input class="form-input" type="number" step="0.1" data-sim="loanRate" value="${S.simCond.loanRate}"></div>`;
+  shtml += `<div class="form-group"><label class="form-label">返済期間（年）</label><input class="form-input" type="number" data-sim="loanYears" value="${S.simCond.loanYears}"></div>`;
+  shtml += `<div class="form-group"><label class="form-label">稼働率年次成長率(%)</label><input class="form-input" type="number" step="0.1" data-sim="occGrowth" value="${S.simCond.occGrowth}"></div>`;
+  shtml += `<div class="form-group"><label class="form-label">単価年次成長率(%)</label><input class="form-input" type="number" step="0.1" data-sim="adrGrowth" value="${S.simCond.adrGrowth}"></div>`;
+  shtml += `<div class="form-group"><label class="form-label">経費年次成長率(%)</label><input class="form-input" type="number" step="0.1" data-sim="expGrowth" value="${S.simCond.expGrowth}"></div>`;
+  shtml += '</div>';
+  shtml += '<div class="form-section" style="margin-top:16px"><div class="form-section-title">繁忙期月設定</div><div class="checkbox-grid">';
+  for (let m = 1; m <= 12; m++) {
+    const checked = S.simCond.peakMonths.includes(m) ? 'checked' : '';
+    shtml += `<label class="checkbox-label"><input type="checkbox" data-peak="${m}" ${checked}>${m}月</label>`;
+  }
+  shtml += '</div></div>';
+  document.getElementById('stab-simcond').innerHTML = shtml;
+}
+
+function applySettings() {
+  // Read room settings
+  document.querySelectorAll('[data-gr]').forEach(el => {
+    const i = parseInt(el.dataset.gr);
+    const f = el.dataset.field;
+    S.generalRooms[i][f] = parseFloat(el.value);
+  });
+  document.querySelectorAll('[data-pr]').forEach(el => {
+    const i = parseInt(el.dataset.pr);
+    const f = el.dataset.field;
+    S.petRooms[i][f] = parseFloat(el.value);
+  });
+
+  // Bulk adjust
+  const bulkOcc = parseFloat(document.getElementById('bulkOccAll')?.value || 100) / 100;
+  const bulkNormal = parseFloat(document.getElementById('bulkADRNormal')?.value || 100) / 100;
+  const bulkPeak = parseFloat(document.getElementById('bulkADRPeak')?.value || 100) / 100;
+  if (bulkOcc !== 1) {
+    S.generalRooms.forEach(r => { r.normalOcc = Math.min(r.normalOcc * bulkOcc, 0.98); r.peakOcc = Math.min(r.peakOcc * bulkOcc, 0.98); });
+    S.petRooms.forEach(r => { r.normalOcc = Math.min(r.normalOcc * bulkOcc, 0.98); r.peakOcc = Math.min(r.peakOcc * bulkOcc, 0.98); });
+  }
+  if (bulkNormal !== 1) {
+    S.generalRooms.forEach(r => { r.normalADR = Math.round(r.normalADR * bulkNormal); });
+    S.petRooms.forEach(r => { r.normalADR = Math.round(r.normalADR * bulkNormal); });
+  }
+  if (bulkPeak !== 1) {
+    S.generalRooms.forEach(r => { r.peakADR = Math.round(r.peakADR * bulkPeak); });
+    S.petRooms.forEach(r => { r.peakADR = Math.round(r.peakADR * bulkPeak); });
+  }
+
+  // Ancillary
+  document.querySelectorAll('[data-anc]').forEach(el => {
+    S.ancillary[el.dataset.anc] = parseFloat(el.value);
+  });
+
+  // Expenses
+  document.querySelectorAll('[data-exp]').forEach(el => {
+    S.expenses[el.dataset.exp] = parseFloat(el.value);
+  });
+
+  // Personnel
+  document.querySelectorAll('[data-dept]').forEach(el => {
+    const i = parseInt(el.dataset.dept);
+    S.personnel.departments[i][el.dataset.df] = parseFloat(el.value);
+  });
+  document.querySelectorAll('[data-pers]').forEach(el => {
+    S.personnel[el.dataset.pers] = parseFloat(el.value);
+  });
+
+  // Sim conditions
+  document.querySelectorAll('[data-sim]').forEach(el => {
+    S.simCond[el.dataset.sim] = parseFloat(el.value);
+  });
+  S.simCond.peakMonths = [];
+  document.querySelectorAll('[data-peak]').forEach(el => {
+    if (el.checked) S.simCond.peakMonths.push(parseInt(el.dataset.peak));
+  });
+
+  closeSettings();
+  update();
+}
+
+// ===== PRESETS =====
+function applyPreset(preset) {
+  S = JSON.parse(JSON.stringify(DEFAULT));
+  applyPresetToS(preset);
+  document.querySelectorAll('.btn-preset').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.btn-preset[onclick*="${preset}"]`).classList.add('active');
+  update();
+}
+
+// ===== TABS =====
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('tab')) {
+    const parent = e.target.closest('.tabs') || e.target.parentElement;
+    parent.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    e.target.classList.add('active');
+    const tabId = e.target.dataset.tab;
+    if (tabId) {
+      document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+      document.getElementById('tab-' + tabId)?.classList.add('active');
+    }
+  }
+  if (e.target.classList.contains('settings-tab')) {
+    const parent = e.target.parentElement;
+    parent.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+    e.target.classList.add('active');
+    const stab = e.target.dataset.stab;
+    document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('stab-' + stab)?.classList.add('active');
+  }
+});
+
+// ===== MAIN UPDATE =====
+function update() {
+  try {
+    const sim = runSimulation();
+    renderKPI(sim);
+    renderScenarioTable();
+    renderCharts(sim);
+    renderPLTable(sim);
+    renderRevPARTable();
+    renderMonthlyDetail();
+  } catch(err) {
+    console.error('Simulation error:', err);
+  }
+}
+
+// Initialize
+update();
+</script>
+</body>
+</html>
