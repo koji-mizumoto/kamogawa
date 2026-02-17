@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>鴨川ヒルズリゾートホテル 収支シミュレーター</title>
+<title>La Pista Resort 収支シミュレーター</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root {
@@ -139,8 +139,8 @@ body { font-family: 'Segoe UI','Hiragino Kaku Gothic ProN','Noto Sans JP',sans-s
 
 <div class="header">
   <div>
-    <h1>鴨川ヒルズリゾートホテル 収支シミュレーター</h1>
-    <div class="header-sub">ペット同伴リニューアル事業計画 | 全66室（一般43室 + ペット23室）</div>
+    <h1>La Pista Resort 収支シミュレーター</h1>
+    <div class="header-sub">ペット同伴リニューアル事業計画 | 全43室（一般20室 + ペット23室）| 1泊2食付</div>
   </div>
   <div class="header-actions">
     <button class="btn btn-preset btn-outline" onclick="applyPreset('conservative')">保守</button>
@@ -257,72 +257,57 @@ body { font-family: 'Segoe UI','Hiragino Kaku Gothic ProN','Noto Sans JP',sans-s
 // ===== DATA MODEL =====
 const DEFAULT = {
   generalRooms: [
-    { id:'tower_washitsu', name:'タワー館 和室', count:6, normalADR:13000, peakADR:20000, normalOcc:0.55, peakOcc:0.75 },
-    { id:'tower_wamodern', name:'タワー館 和モダン', count:6, normalADR:16000, peakADR:25000, normalOcc:0.60, peakOcc:0.80 },
-    { id:'tower_wayoshitsu', name:'タワー館 和洋室', count:3, normalADR:20000, peakADR:30000, normalOcc:0.60, peakOcc:0.80 },
-    { id:'honkan_deluxe', name:'本館 洋室デラックス', count:6, normalADR:13000, peakADR:21000, normalOcc:0.55, peakOcc:0.75 },
-    { id:'honkan_wayoshitsu', name:'本館 和洋室 6畳+ツイン', count:10, normalADR:12000, peakADR:20000, normalOcc:0.55, peakOcc:0.75 },
-    { id:'washitsu10', name:'和室10畳', count:5, normalADR:11000, peakADR:18000, normalOcc:0.50, peakOcc:0.70 },
-    { id:'suite', name:'スイートルーム', count:1, normalADR:35000, peakADR:50000, normalOcc:0.50, peakOcc:0.75 },
-    { id:'tower_wamodern_refa', name:'タワー館 和モダン refa', count:2, normalADR:20000, peakADR:30000, normalOcc:0.60, peakOcc:0.80 },
-    { id:'tower_wayoshitsu_refa', name:'タワー館 和洋室 refa', count:1, normalADR:22000, peakADR:32000, normalOcc:0.60, peakOcc:0.80 },
-    { id:'honkan_suite', name:'本館 スイートルーム', count:3, normalADR:30000, peakADR:45000, normalOcc:0.55, peakOcc:0.75 }
+    { id:'gen_standard', name:'一般スタンダード', count:16, normalADR:60000, peakADR:90000, normalOcc:0.42, peakOcc:0.55 },
+    { id:'gen_suite', name:'一般スイート', count:4, normalADR:100000, peakADR:150000, normalOcc:0.40, peakOcc:0.52 }
   ],
   petRooms: [
-    { id:'pet_standard', name:'ペットスタンダード', count:14, normalADR:18000, peakADR:27000, petFee:3000, petFee2:2000, normalOcc:0.60, peakOcc:0.80 },
-    { id:'pet_premium', name:'ペットプレミアム', count:6, normalADR:25000, peakADR:38000, petFee:5000, petFee2:3000, normalOcc:0.65, peakOcc:0.85 },
-    { id:'pet_suite', name:'ペットスイート', count:3, normalADR:35000, peakADR:50000, petFee:8000, petFee2:5000, normalOcc:0.60, peakOcc:0.80 }
+    { id:'pet_standard', name:'ペットスタンダード', count:21, normalADR:60000, peakADR:90000, petFee:990, petFee2:3300, normalOcc:0.52, peakOcc:0.65 },
+    { id:'pet_suite', name:'ペットスイート', count:2, normalADR:120000, peakADR:180000, petFee:990, petFee2:3300, normalOcc:0.50, peakOcc:0.62 }
   ],
   ancillary: {
-    restCapacity:120, breakfastPrice:2500, dinnerPrice:6000, petMenuPrice:1500,
-    breakfastUtil:0.80, dinnerUtil:0.70, avgGuests:2.2,
-    dogRunExtFee:1000, dogRunExtVisits:100,
-    groomPrice:5000, groomClients:40,
-    petShopMonthly:100000,
-    bbqPrice:4000, bbqUses:60,
-    banquetPrice:50000, banquetUses:4,
-    shopMonthly:150000,
-    spaPrice:5000, spaClients:30,
-    otherMonthly:60000
+    avgGuestsGen:2.2, avgGuestsPet:2.0,
+    drinkOrderRate:0.60, drinkPrice:2500,
+    petPremiumPlate:1650, petPremiumRate:0.30,
+    petCake:1500, petCakeRate:0.10,
+    shopMonthly:200000,
+    otherMonthly:217000
   },
   expenses: {
-    bm:450000, netTel:250000,
-    elec:1100000, water:400000, gas:150000, pool:150000,
-    legal:100000, system:200000, garbage:60000, ad:500000,
-    otaRate:0.12, agentRate:0.10,
-    entertainment:600000, marketing:80000,
-    foodCostRate:0.30, bevCostRate:0.15,
-    linenUnit:2500, restLinen:200000,
-    amenityUnit:1200, amenityGuests:2.2,
-    petLinen:200000, petClean:250000, dogRunMaint:120000, petFood:150000, petInsurance:80000,
-    generalAdmin:250000, housing:200000, training:250000,
-    equipRoom:300000, equipPetRoom:100000, equipRest:200000, equipCommon:100000, equipPet:50000,
-    insFire:130000, insLiability:100000, insFood:30000, insWorker:30000, insInn:50000, insPet:40000, insOther:20000,
-    maintAC:200000, maintElec:100000, maintPlumb:120000, maintPool:100000, maintDogRun:80000,
-    repairRegular:400000, repairEmergency:200000,
-    disaster:500000, majorRepair:500000, propertyTax:1400000, reserve:1000000
+    foodCostPerGuest:5883, bevCostRate:0.30,
+    linenUnitGen:3000, linenUnitPet:3800,
+    amenityUnit:2000,
+    otaCommRate:0.084837,
+    petRelated:1000000,
+    utilities:4125000,
+    adMarketing:1100000,
+    repair:1100000,
+    insuranceAll:400000,
+    generalFixed:400000,
+    propertyTax:1400000
   },
   personnel: {
     departments: [
-      { name:'総支配人', ft:1, pt:0, salary:550000 },
-      { name:'フロント・予約', ft:8, pt:2, salary:300000 },
-      { name:'ハウスキーピング', ft:8, pt:6, salary:260000 },
-      { name:'レストラン', ft:6, pt:4, salary:280000 },
-      { name:'キッチン', ft:7, pt:1, salary:300000 },
-      { name:'施設管理', ft:4, pt:0, salary:290000 },
-      { name:'管理部門', ft:3, pt:0, salary:320000 },
+      { name:'総支配人・副支配人', ft:2, pt:0, salary:500000 },
+      { name:'フロント・コンシェルジュ', ft:6, pt:2, salary:310000 },
+      { name:'予約・管理部門', ft:2, pt:1, salary:330000 },
+      { name:'HK 一般棟', ft:3, pt:3, salary:260000 },
+      { name:'HK ペット棟', ft:2, pt:3, salary:265000 },
+      { name:'キッチン', ft:5, pt:3, salary:310000 },
+      { name:'レストランホール', ft:3, pt:5, salary:275000 },
+      { name:'施設管理', ft:3, pt:0, salary:290000 },
       { name:'ペットコンシェルジュ', ft:2, pt:0, salary:300000 },
-      { name:'ペット専用清掃員', ft:1, pt:2, salary:250000 }
+      { name:'ペット専用清掃', ft:1, pt:2, salary:250000 },
+      { name:'マーケティング', ft:1, pt:0, salary:350000 }
     ],
-    ptHourly:1200, ptHours:120,
+    ptHourly:1200, ptHours:126,
     socialRate:0.15, bonusMonths:3.0, allowanceRate:0.057
   },
   simCond: {
     years:10,
-    peakMonths:[3,4,5,7,8,9,12],
+    peakMonths:[3,5,7,8,9,12],
     occGrowth:1.0, adrGrowth:1.5, expGrowth:2.0,
-    totalInvestment:600000000,
-    loanAmount:420000000, loanRate:1.8, loanYears:20
+    totalInvestment:585000000,
+    loanAmount:409500000, loanRate:1.8, loanYears:20
   }
 };
 
@@ -332,8 +317,11 @@ let charts = {};
 // ===== CALCULATION ENGINE =====
 const MONTHS = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 const DAYS = [31,28,31,30,31,30,31,31,30,31,30,31];
-const OCC_PATTERN_GEN = [0.80,0.85,1.05,1.10,1.15,0.85,1.20,1.30,1.05,0.90,0.80,1.00];
-const OCC_PATTERN_PET = [0.85,0.85,1.05,1.15,1.15,0.85,1.15,1.25,1.10,0.90,0.85,1.00];
+// Monthly OCC multipliers: target annual avg Gen=49.6%, Pet=60.0%
+// Jan35%,Feb35%,Mar50%,Apr45%,May65%,Jun35%,Jul65%,Aug80%,Sep50%,Oct45%,Nov40%,Dec50%
+const OCC_PATTERN_GEN = [0.833,0.833,1.190,0.818,1.182,0.833,1.182,1.455,1.190,0.909,0.952,0.952];
+// Jan45%,Feb45%,Mar60%,Apr55%,May75%,Jun50%,Jul75%,Aug90%,Sep60%,Oct55%,Nov50%,Dec60%
+const OCC_PATTERN_PET = [0.865,0.865,1.154,0.846,1.154,0.962,1.154,1.385,1.154,0.962,0.962,0.962];
 
 function isPeak(m) { return S.simCond.peakMonths.includes(m+1); }
 
@@ -352,12 +340,14 @@ function calcRoomRevenue(rooms, isPetRoom, month, yearIdx) {
   const peak = isPeak(month);
   const pattern = isPetRoom ? OCC_PATTERN_PET[month] : OCC_PATTERN_GEN[month];
   for (const rm of rooms) {
+    // ADR is per-room (2名1室・1泊2食付)
     const adr = (peak ? rm.peakADR : rm.normalADR) * adrGrowth;
     const baseOcc = peak ? rm.peakOcc : rm.normalOcc;
     const occ = Math.min(baseOcc * pattern * occGrowth, 1.0);
     total += rm.count * adr * occ * DAYS[month];
+    // Pet 2nd animal fee: avg 0.3 heads × ¥3,300
     if (isPetRoom && rm.petFee) {
-      total += rm.count * rm.petFee * adrGrowth * occ * DAYS[month] * 0.85;
+      total += rm.count * rm.petFee * adrGrowth * occ * DAYS[month];
     }
   }
   return total;
@@ -376,42 +366,43 @@ function calcWeightedOcc(rooms, month, yearIdx, pattern) {
   return totalRN > 0 ? totalOccRN / totalRN : 0;
 }
 
-function calcRestaurantRevenue(month, yearIdx) {
+function calcAncillaryDetail(month, yearIdx) {
+  // Meals are included in room rate (1泊2食付). Ancillary = drinks + pet options + shop
   const a = S.ancillary;
   const adrGrowth = Math.pow(1 + S.simCond.adrGrowth/100, yearIdx);
   const genOcc = calcWeightedOcc(S.generalRooms, month, yearIdx, OCC_PATTERN_GEN);
   const petOcc = calcWeightedOcc(S.petRooms, month, yearIdx, OCC_PATTERN_PET);
   const genCount = S.generalRooms.reduce((s,r)=>s+r.count,0);
   const petCount = S.petRooms.reduce((s,r)=>s+r.count,0);
-  const genGuests = genCount * genOcc * a.avgGuests * DAYS[month];
-  const petGuests = petCount * petOcc * 2.0 * DAYS[month];
+  const genGuests = genCount * genOcc * a.avgGuestsGen * DAYS[month];
+  const petGuests = petCount * petOcc * a.avgGuestsPet * DAYS[month];
   const totalGuests = genGuests + petGuests;
-  const breakfast = totalGuests * a.breakfastUtil * a.breakfastPrice * adrGrowth;
-  const dinner = totalGuests * a.dinnerUtil * a.dinnerPrice * adrGrowth;
-  const petMenu = petGuests * 0.5 * a.petMenuPrice * adrGrowth;
-  return { breakfast, dinner, petMenu, total: breakfast + dinner + petMenu };
+  // Drinks (alcohol/bar)
+  const drinks = totalGuests * a.drinkOrderRate * a.drinkPrice * adrGrowth;
+  // Pet options (premium plate + cake)
+  const petRooms = petCount * petOcc * DAYS[month];
+  const petOptions = petRooms * (a.petPremiumPlate * a.petPremiumRate + a.petCake * a.petCakeRate) * adrGrowth;
+  // Shop & other
+  const shop = a.shopMonthly * adrGrowth;
+  const other = a.otherMonthly * adrGrowth;
+  return { drinks, petOptions, shop, other, total: drinks + petOptions + shop + other, totalGuests, genGuests, petGuests };
 }
 
 function calcAncillaryRevenue(month, yearIdx) {
-  const a = S.ancillary;
-  const adrGrowth = Math.pow(1 + S.simCond.adrGrowth/100, yearIdx);
-  const rest = calcRestaurantRevenue(month, yearIdx);
-  const dogRun = a.dogRunExtFee * a.dogRunExtVisits;
-  const groom = a.groomPrice * a.groomClients;
-  const petShop = a.petShopMonthly;
-  const bbq = isPeak(month) ? a.bbqPrice * a.bbqUses : a.bbqPrice * a.bbqUses * 0.3;
-  const banquet = a.banquetPrice * a.banquetUses;
-  const shop = a.shopMonthly * adrGrowth;
-  const spa = a.spaPrice * a.spaClients;
-  const other = a.otherMonthly;
+  const detail = calcAncillaryDetail(month, yearIdx);
   return {
-    restaurant: rest.total,
-    dogRun, groom, petShop, bbq, banquet, shop, spa, other,
-    total: rest.total + dogRun + groom + petShop + bbq + banquet + shop + spa + other
+    drinks: detail.drinks,
+    petOptions: detail.petOptions,
+    shop: detail.shop,
+    other: detail.other,
+    total: detail.total,
+    totalGuests: detail.totalGuests,
+    genGuests: detail.genGuests,
+    petGuests: detail.petGuests
   };
 }
 
-function calcMonthlyExpenses(month, yearIdx, monthlyRoomRevenue, monthlyRestRevenue) {
+function calcMonthlyExpenses(month, yearIdx, monthlyRoomRevenue, ancillary) {
   const e = S.expenses;
   const expGrowth = Math.pow(1 + S.simCond.expGrowth/100, yearIdx);
   const genOcc = calcWeightedOcc(S.generalRooms, month, yearIdx, OCC_PATTERN_GEN);
@@ -428,53 +419,53 @@ function calcMonthlyExpenses(month, yearIdx, monthlyRoomRevenue, monthlyRestReve
   const allowance = ftBase * S.personnel.allowanceRate;
   const personnel = (ftBase + ptTotal + socialIns + bonus + allowance) * expGrowth;
 
-  // Variable costs
-  const otaCommission = monthlyRoomRevenue * e.otaRate * 0.5;
-  const agentCommission = monthlyRoomRevenue * e.agentRate * 0.2;
-  const commission = otaCommission + agentCommission;
+  // Variable: OTA commission on room revenue
+  const commission = monthlyRoomRevenue * e.otaCommRate;
 
-  const foodCost = monthlyRestRevenue * e.foodCostRate;
-  const bevCost = monthlyRestRevenue * e.bevCostRate;
-  const restCosts = foodCost + bevCost + (200000 + 200000) * expGrowth;
+  // Variable: Food cost (per-guest, meals included in room rate)
+  const totalGuests = ancillary.totalGuests || 0;
+  const foodCost = totalGuests * e.foodCostPerGuest * expGrowth;
 
+  // Variable: Beverage cost (on drink revenue)
+  const bevCost = (ancillary.drinks || 0) * e.bevCostRate;
+
+  // Variable: Linen (per room-night)
   const genLinenRN = genCount * genOcc * DAYS[month];
   const petLinenRN = petCount * petOcc * DAYS[month];
-  const linen = (genLinenRN * e.linenUnit + petLinenRN * e.linenUnit + e.restLinen) * expGrowth;
+  const linen = (genLinenRN * e.linenUnitGen + petLinenRN * e.linenUnitPet) * expGrowth;
 
-  const genAmenity = genCount * genOcc * DAYS[month] * e.amenityGuests * e.amenityUnit * 0.5;
-  const petAmenity = petCount * petOcc * DAYS[month] * 2.0 * e.amenityUnit * 0.5 + petCount * petOcc * DAYS[month] * 500;
-  const amenity = (genAmenity + petAmenity) * expGrowth;
+  // Variable: Amenity (per room-night)
+  const amenityRN = (genLinenRN + petLinenRN) * e.amenityUnit;
+  const amenity = amenityRN * expGrowth;
 
-  // Fixed & semi-variable
-  const fixed = (
-    e.bm + e.netTel + e.elec + e.water + e.gas + e.pool +
-    e.legal + e.system + e.garbage + e.ad +
-    e.entertainment + e.marketing +
-    e.petLinen + e.petClean + e.dogRunMaint + e.petFood + e.petInsurance +
-    e.generalAdmin + e.housing + e.training +
-    e.equipRoom + e.equipPetRoom + e.equipRest + e.equipCommon + e.equipPet +
-    e.insFire + e.insLiability + e.insFood + e.insWorker + e.insInn + e.insPet + e.insOther +
-    e.maintAC + e.maintElec + e.maintPlumb + e.maintPool + e.maintDogRun +
-    e.repairRegular + e.repairEmergency +
-    e.disaster + e.majorRepair + e.propertyTax + e.reserve
-  ) * expGrowth;
+  // Fixed costs (monthly)
+  const petRelated = e.petRelated * expGrowth;
+  const utilities = e.utilities * expGrowth;
+  const adMarketing = e.adMarketing * expGrowth;
+  const repair = e.repair * expGrowth;
+  const insuranceAll = e.insuranceAll * expGrowth;
+  const generalFixed = e.generalFixed * expGrowth;
+  const propertyTax = e.propertyTax * expGrowth;
 
-  const total = personnel + commission + restCosts + linen + amenity + fixed;
+  const fixed = petRelated + utilities + adMarketing + repair + insuranceAll + generalFixed + propertyTax;
+  const total = personnel + commission + foodCost + bevCost + linen + amenity + fixed;
+
   return {
-    personnel, commission, restCosts, linen, amenity, fixed, total,
+    personnel, commission, foodCost, bevCost, linen, amenity, fixed, total,
     categories: {
       '人件費': personnel,
+      '食材費': foodCost,
+      '飲料原価': bevCost,
       '集客手数料': commission,
-      'レストラン仕入': restCosts,
       'リネン費': linen,
       'アメニティ費': amenity,
-      '水光熱費': (e.elec + e.water + e.gas + e.pool) * expGrowth,
-      '固定資産税': e.propertyTax * expGrowth,
-      '設備メンテ・修繕': (e.maintAC+e.maintElec+e.maintPlumb+e.maintPool+e.maintDogRun+e.repairRegular+e.repairEmergency) * expGrowth,
-      '広告・マーケティング': (e.ad + e.marketing) * expGrowth,
-      '保険': (e.insFire+e.insLiability+e.insFood+e.insWorker+e.insInn+e.insPet+e.insOther) * expGrowth,
-      'ペット関連': (e.petLinen+e.petClean+e.dogRunMaint+e.petFood+e.petInsurance) * expGrowth,
-      'その他': (e.bm+e.netTel+e.legal+e.system+e.garbage+e.entertainment+e.generalAdmin+e.housing+e.training+e.equipRoom+e.equipPetRoom+e.equipRest+e.equipCommon+e.equipPet+e.disaster+e.majorRepair+e.reserve) * expGrowth
+      '水光熱費': utilities,
+      '固定資産税': propertyTax,
+      '修繕・メンテナンス': repair,
+      '広告・マーケティング': adMarketing,
+      '保険': insuranceAll,
+      'ペット関連': petRelated,
+      'その他固定費': generalFixed
     }
   };
 }
@@ -485,7 +476,7 @@ function runSimulation() {
   const results = { yearly:[], monthly:[] };
 
   for (let y = 0; y < years; y++) {
-    let yearData = { genRevenue:0, petRevenue:0, ancRevenue:0, restRevenue:0, expenses:0, loanPayment:loan*12, months:[] };
+    let yearData = { genRevenue:0, petRevenue:0, ancRevenue:0, expenses:0, loanPayment:loan*12, months:[] };
     let yearExpCats = {};
 
     for (let m = 0; m < 12; m++) {
@@ -493,16 +484,15 @@ function runSimulation() {
       const petRev = calcRoomRevenue(S.petRooms, true, m, y);
       const roomRev = genRev + petRev;
       const anc = calcAncillaryRevenue(m, y);
-      const exp = calcMonthlyExpenses(m, y, roomRev, anc.restaurant);
+      const exp = calcMonthlyExpenses(m, y, roomRev, anc);
       const totalRev = roomRev + anc.total;
       const net = totalRev - exp.total - loan;
 
-      const mData = { month:m, genRevenue:genRev, petRevenue:petRev, roomRevenue:roomRev, ancRevenue:anc.total, restRevenue:anc.restaurant, totalRevenue:totalRev, expenses:exp.total, loanPayment:loan, net, expCats:exp.categories };
+      const mData = { month:m, genRevenue:genRev, petRevenue:petRev, roomRevenue:roomRev, ancRevenue:anc.total, totalRevenue:totalRev, expenses:exp.total, loanPayment:loan, net, expCats:exp.categories };
       yearData.months.push(mData);
       yearData.genRevenue += genRev;
       yearData.petRevenue += petRev;
       yearData.ancRevenue += anc.total;
-      yearData.restRevenue += anc.restaurant;
       yearData.expenses += exp.total;
 
       for (const [k,v] of Object.entries(exp.categories)) {
@@ -803,7 +793,7 @@ function renderSettingsPanels() {
   rhtml += '<div class="form-group"><label class="form-label">通常期料金調整(%)</label><input class="form-input" type="number" id="bulkADRNormal" value="100" min="50" max="150"></div>';
   rhtml += '<div class="form-group"><label class="form-label">繁忙期料金調整(%)</label><input class="form-input" type="number" id="bulkADRPeak" value="100" min="50" max="150"></div>';
   rhtml += '</div></div>';
-  rhtml += '<div class="form-section"><div class="form-section-title">既存一般客室（43室）</div><div class="room-grid">';
+  rhtml += '<div class="form-section"><div class="form-section-title">一般客室（20室）</div><div class="room-grid">';
   S.generalRooms.forEach((r,i) => {
     rhtml += `<div class="room-card"><h4>${r.name}（${r.count}室）</h4><div class="form-row">
       <div class="form-group"><label class="form-label">通常期ADR</label><input class="form-input" type="number" data-gr="${i}" data-field="normalADR" value="${r.normalADR}"></div>
@@ -827,33 +817,22 @@ function renderSettingsPanels() {
   rhtml += '</div></div>';
   document.getElementById('stab-rooms').innerHTML = rhtml;
 
-  // Ancillary
+  // Ancillary (meals included in room rate; ancillary = drinks + pet options + shop)
   const a = S.ancillary;
-  let ahtml = '<div class="form-section"><div class="form-section-title">レストラン</div><div class="form-row">';
-  ahtml += `<div class="form-group"><label class="form-label">収容人数</label><input class="form-input" type="number" data-anc="restCapacity" value="${a.restCapacity}"></div>`;
-  ahtml += `<div class="form-group"><label class="form-label">朝食単価</label><input class="form-input" type="number" data-anc="breakfastPrice" value="${a.breakfastPrice}"></div>`;
-  ahtml += `<div class="form-group"><label class="form-label">夕食単価</label><input class="form-input" type="number" data-anc="dinnerPrice" value="${a.dinnerPrice}"></div>`;
-  ahtml += `<div class="form-group"><label class="form-label">ペットメニュー単価</label><input class="form-input" type="number" data-anc="petMenuPrice" value="${a.petMenuPrice}"></div>`;
-  ahtml += `<div class="form-group"><label class="form-label">朝食利用率</label><input class="form-input" type="number" step="0.01" data-anc="breakfastUtil" value="${a.breakfastUtil}"></div>`;
-  ahtml += `<div class="form-group"><label class="form-label">夕食利用率</label><input class="form-input" type="number" step="0.01" data-anc="dinnerUtil" value="${a.dinnerUtil}"></div>`;
+  let ahtml = '<div class="form-section"><div class="form-section-title">飲料売上（アルコール・バー）</div><div class="form-row">';
+  ahtml += `<div class="form-group"><label class="form-label">注文率</label><input class="form-input" type="number" step="0.01" data-anc="drinkOrderRate" value="${a.drinkOrderRate}"></div>`;
+  ahtml += `<div class="form-group"><label class="form-label">平均客単価</label><input class="form-input" type="number" data-anc="drinkPrice" value="${a.drinkPrice}"></div>`;
+  ahtml += `<div class="form-group"><label class="form-label">一般客 平均人数</label><input class="form-input" type="number" step="0.1" data-anc="avgGuestsGen" value="${a.avgGuestsGen}"></div>`;
+  ahtml += `<div class="form-group"><label class="form-label">ペット客 平均人数</label><input class="form-input" type="number" step="0.1" data-anc="avgGuestsPet" value="${a.avgGuestsPet}"></div>`;
   ahtml += '</div></div>';
-  ahtml += '<div class="form-section"><div class="form-section-title">ドッグラン</div><div class="form-row">';
-  ahtml += `<div class="form-group"><label class="form-label">外部利用料</label><input class="form-input" type="number" data-anc="dogRunExtFee" value="${a.dogRunExtFee}"></div>`;
-  ahtml += `<div class="form-group"><label class="form-label">月間外部利用数</label><input class="form-input" type="number" data-anc="dogRunExtVisits" value="${a.dogRunExtVisits}"></div>`;
+  ahtml += '<div class="form-section"><div class="form-section-title">ペットオプション</div><div class="form-row">';
+  ahtml += `<div class="form-group"><label class="form-label">プレミアムプレート単価</label><input class="form-input" type="number" data-anc="petPremiumPlate" value="${a.petPremiumPlate}"></div>`;
+  ahtml += `<div class="form-group"><label class="form-label">注文率</label><input class="form-input" type="number" step="0.01" data-anc="petPremiumRate" value="${a.petPremiumRate}"></div>`;
+  ahtml += `<div class="form-group"><label class="form-label">記念日ケーキ単価</label><input class="form-input" type="number" data-anc="petCake" value="${a.petCake}"></div>`;
+  ahtml += `<div class="form-group"><label class="form-label">ケーキ注文率</label><input class="form-input" type="number" step="0.01" data-anc="petCakeRate" value="${a.petCakeRate}"></div>`;
   ahtml += '</div></div>';
-  ahtml += '<div class="form-section"><div class="form-section-title">グルーミング</div><div class="form-row">';
-  ahtml += `<div class="form-group"><label class="form-label">単価</label><input class="form-input" type="number" data-anc="groomPrice" value="${a.groomPrice}"></div>`;
-  ahtml += `<div class="form-group"><label class="form-label">月間件数</label><input class="form-input" type="number" data-anc="groomClients" value="${a.groomClients}"></div>`;
-  ahtml += '</div></div>';
-  ahtml += '<div class="form-section"><div class="form-section-title">その他付帯</div><div class="form-row">';
-  ahtml += `<div class="form-group"><label class="form-label">ペット用品販売(月額)</label><input class="form-input" type="number" data-anc="petShopMonthly" value="${a.petShopMonthly}"></div>`;
-  ahtml += `<div class="form-group"><label class="form-label">BBQ単価</label><input class="form-input" type="number" data-anc="bbqPrice" value="${a.bbqPrice}"></div>`;
-  ahtml += `<div class="form-group"><label class="form-label">BBQ月間利用</label><input class="form-input" type="number" data-anc="bbqUses" value="${a.bbqUses}"></div>`;
-  ahtml += `<div class="form-group"><label class="form-label">宴会場単価</label><input class="form-input" type="number" data-anc="banquetPrice" value="${a.banquetPrice}"></div>`;
-  ahtml += `<div class="form-group"><label class="form-label">宴会場月間利用</label><input class="form-input" type="number" data-anc="banquetUses" value="${a.banquetUses}"></div>`;
+  ahtml += '<div class="form-section"><div class="form-section-title">その他</div><div class="form-row">';
   ahtml += `<div class="form-group"><label class="form-label">売店収入(月額)</label><input class="form-input" type="number" data-anc="shopMonthly" value="${a.shopMonthly}"></div>`;
-  ahtml += `<div class="form-group"><label class="form-label">スパ単価</label><input class="form-input" type="number" data-anc="spaPrice" value="${a.spaPrice}"></div>`;
-  ahtml += `<div class="form-group"><label class="form-label">スパ月間件数</label><input class="form-input" type="number" data-anc="spaClients" value="${a.spaClients}"></div>`;
   ahtml += `<div class="form-group"><label class="form-label">その他(月額)</label><input class="form-input" type="number" data-anc="otherMonthly" value="${a.otherMonthly}"></div>`;
   ahtml += '</div></div>';
   document.getElementById('stab-ancillary').innerHTML = ahtml;
@@ -861,22 +840,19 @@ function renderSettingsPanels() {
   // Expenses
   const ex = S.expenses;
   const expItems = [
-    ['BM費用','bm'],['ネット/電話','netTel'],['電気代','elec'],['水道代','water'],['ガス代','gas'],['プール関連','pool'],
-    ['弁護士/税理士','legal'],['システム利用料','system'],['ゴミ回収費','garbage'],['広告宣伝費','ad'],
-    ['OTA手数料率','otaRate'],['代理店手数料率','agentRate'],
-    ['エンターテインメント','entertainment'],['マーケティング調査','marketing'],
-    ['食材費率','foodCostRate'],['飲料費率','bevCostRate'],
-    ['リネン1室単価','linenUnit'],['レストランリネン','restLinen'],
-    ['アメニティ1人単価','amenityUnit'],
-    ['ペット用リネン','petLinen'],['消臭清掃','petClean'],['ドッグラン維持','dogRunMaint'],['ペットフード','petFood'],['ペット保険','petInsurance'],
-    ['一般管理費','generalAdmin'],['住宅手当等','housing'],['トレーニング','training'],
-    ['備品(客室)','equipRoom'],['備品(ペット室)','equipPetRoom'],['備品(レストラン)','equipRest'],['備品(共用部)','equipCommon'],['備品(ペット)','equipPet'],
-    ['火災保険','insFire'],['施設賠償','insLiability'],['食中毒保険','insFood'],['使用者賠償','insWorker'],['旅館賠償','insInn'],['ペット保険','insPet'],['その他保険','insOther'],
-    ['空調メンテ','maintAC'],['電気メンテ','maintElec'],['給排水メンテ','maintPlumb'],['プールメンテ','maintPool'],['ドッグランメンテ','maintDogRun'],
-    ['定期修繕','repairRegular'],['緊急修繕','repairEmergency'],
-    ['災害対策','disaster'],['大規模修繕積立','majorRepair'],['固定資産税','propertyTax'],['予備費','reserve']
+    ['食材費/人泊(円)','foodCostPerGuest'],['飲料原価率','bevCostRate'],
+    ['リネン単価(一般/室泊)','linenUnitGen'],['リネン単価(ペット/室泊)','linenUnitPet'],
+    ['アメニティ単価/室泊','amenityUnit'],
+    ['OTA手数料率','otaCommRate'],
+    ['ペット関連(月額)','petRelated'],
+    ['水光熱費(月額)','utilities'],
+    ['広告・マーケティング(月額)','adMarketing'],
+    ['修繕・メンテナンス(月額)','repair'],
+    ['保険(月額)','insuranceAll'],
+    ['その他固定費(月額)','generalFixed'],
+    ['固定資産税(月額)','propertyTax']
   ];
-  let ehtml = '<table class="expense-table"><thead><tr><th>経費項目</th><th>月額(円) / 率</th></tr></thead><tbody>';
+  let ehtml = '<table class="expense-table"><thead><tr><th>経費項目</th><th>金額 / 率</th></tr></thead><tbody>';
   expItems.forEach(([label,key]) => {
     const isRate = key.includes('Rate');
     const step = isRate ? '0.01' : '1000';
